@@ -127,7 +127,7 @@
           <div class="term" id="f-name"></div>
           <div class="hook" id="f-hook"></div>
           <div class="underbar"></div>
-          <div class="flip-hint"><span class="arrow">&#x21BB;</span> flip for the move, Python pattern &amp; mistake</div>
+          <div class="flip-hint"><span class="arrow">&#x1BB;</span> flip for the move, Python pattern &amp; mistake</div>
         </div>
       </div>
       <div class="face back">
@@ -161,15 +161,15 @@
 
   <p class="foot">
     <span class="kbd">&#x2190;</span>/<span class="kbd">&#x2192;</span> navigate &#x00B7; <span class="kbd">Space</span> flip &#x00B7; <span class="kbd">S</span> shuffle &#x00B7; <span class="kbd">C</span> communication-only<br>
-    12 cards &#x00B7; practice narrating this out loud, not just doing it silently in your head
+    21 cards &#x00B7; understand &#x2192; structure &#x2192; execute &#x2192; pattern recognition &amp; worked examples
   </p>
 </div>
 
 <script>
 const CARDS = [
 {track:"Orientation",tier:"build",num:"Read This First",name:"What 'Problem Solving' Actually Scores",
- hook:"This round grades your process, not just your final answer.",
- approach:"Amazon's Problem Solving round specifically evaluates whether you can take an ambiguous, underspecified prompt and turn it into a structured, manageable approach \u2014 that's a different skill than \u201ccan you code a known pattern.\u201d A correct solution reached in total silence gives the interviewer almost nothing to score; a partially-working solution reached through visible, logical decomposition gives them a lot to score favorably.",
+ hook:"Unlike a normal LeetCode prompt, there's often no single obvious algorithm.",
+ approach:"Amazon evaluates candidates across three technical dimensions \u2014 Coding, Problem Solving, and System Design \u2014 plus Behavioral. For SDE II, Senior SDE, and many AI Engineer roles, Problem Solving is often where candidates actually distinguish themselves, because unlike \u201cgiven an array, find\u2026\u201d, the prompt is framed as an ambiguous real-world scenario: <em>\u201cdesign an algorithm that detects duplicate transactions in a payment system,\u201d</em> or <em>\u201chow would you optimize a warehouse picking route?\u201d</em> There usually isn't one obvious answer \u2014 they're evaluating how you think, not whether you know a specific solution.",
  code:`# The interviewer is filling out a scorecard while you work.
 # Two candidates, same final bug:
 #
@@ -179,8 +179,13 @@ const CARDS = [
 #   pieces, catches the same bug themselves while testing.
 #
 # B scores higher on "Problem Solving" even with a rockier
-# path, because the SCORECARD is about how you got there.`,
- mistake:"Treating this round like the algorithms round \u2014 optimizing silently for the fastest correct answer instead of the most legible reasoning process.",
+# path, because the SCORECARD is about how you got there.
+#
+# Amazon tends to emphasize: practical engineering, tradeoffs,
+# scalability, clean implementation, customer-focused
+# constraints, and clear communication -- throughout, not just
+# at the end.`,
+ mistake:"Treating this round like the algorithms round \u2014 optimizing silently for the fastest correct answer instead of the most legible reasoning process on a prompt that doesn't have one clean answer to begin with.",
  why:["Sets up every step below \u2014 each one exists to make part of your reasoning visible","This is the lens to reread the rest of the deck through"],
  cx:["applies across: <b>every step below</b>"]},
 
@@ -197,18 +202,38 @@ const CARDS = [
     pass  # plan comes before implementation`,
  mistake:"Starting to code from a half-understood prompt, then discovering the misunderstanding halfway through the solve \u2014 at which point the whole approach may need to be scrapped.",
  why:["Confirms understanding before any work is sunk into a wrong interpretation","A docstring-first habit shows structure even before real logic exists"],
+ cx:["precedes: <b>Identify Inputs and Outputs</b>"]},
+
+{track:"1 \u00B7 Understand",tier:"skip",num:"Step 1.5",name:"Identify Inputs and Outputs",
+ hook:"Define the exact contract \u2014 don't leave it implied.",
+ approach:"Right after restating the problem, explicitly name the input and output shapes. This is a distinct step from restating in prose, because it forces precision about the actual data involved \u2014 a list of transaction objects versus just IDs, a stream versus a fixed array \u2014 and it often surfaces its own clarifying question before you've written anything.",
+ code:`# Input:  a list of Transaction objects (id, amount, timestamp)
+# Output: a list of transaction IDs considered duplicates
+#
+# Naming this explicitly caught an assumption I almost missed:
+# "duplicate" could mean the same ID appearing twice, OR the
+# same amount+timestamp under two different IDs -- worth
+# confirming which definition applies here.`,
+ mistake:"Treating the input/output as \u201cobviously\u201d whatever the first sentence implied, then discovering mid-implementation that a word like \u201cduplicate\u201d or \u201ctransaction\u201d meant something different than assumed.",
+ why:["A precise contract is a cheap, two-line insurance policy against a costly wrong turn later","Defining it explicitly often generates its own clarifying question, feeding directly into the next step"],
  cx:["precedes: <b>Ask Clarifying Questions</b>"]},
 
 {track:"1 \u00B7 Understand",tier:"skip",num:"Step 2",name:"Ask Clarifying Questions",
  hook:"Name what's NOT specified, then ask about it \u2014 don't assume silently.",
- approach:"Identify what the prompt leaves ambiguous \u2014 duplicates, sort order, empty input, negative numbers, multiple valid answers, input size \u2014 and ask two or three targeted questions rather than guessing. Then write the confirmed assumptions down where the interviewer can see them.",
- code:`# Assumptions confirmed with interviewer before coding:
-#   - nums may contain duplicate values
-#   - exactly one valid pair is guaranteed to exist
-#   - nums is NOT pre-sorted
-#   - array can be empty -> should return [] in that case
+ approach:"Identify what the prompt leaves ambiguous across a few standard categories \u2014 scale, streaming vs. static, latency, memory, data quality, and whether input can be mutated \u2014 and ask two or three targeted questions rather than guessing. Then write the confirmed assumptions down where the interviewer can see them.",
+ code:`# Clarifying questions, by category:
+#   Scale:     how large is the input? does it grow over time?
+#   Streaming: does data arrive continuously, or is it static?
+#   Latency:   does this need to respond in real time?
+#   Memory:    is there a memory constraint to design around?
+#   Data:      are duplicate values allowed? can input be invalid?
+#   Mutation:  am I allowed to modify the input in place?
 #
-# These become my edge cases to test later -- don't lose them.`,
+# Confirmed assumptions (these become the edge-case checklist
+# for testing later -- don't lose them):
+#   - input arrives as a static batch, not a stream
+#   - duplicates ARE possible and must be handled
+#   - invalid entries should be skipped, not raise an error`,
  mistake:"Silently assuming something convenient (e.g. the array is sorted) and building an approach that's simply wrong once the real constraints come out in testing.",
  why:["Unstated assumptions are the single most common source of a wrong solution in this round","Writing them down turns them into a testing checklist for later, not just a one-time question"],
  cx:["precedes: <b>Work an Example by Hand</b>"]},
@@ -278,6 +303,35 @@ def _rank(candidates: list[str]) -> list[str]:
 #  on every outer iteration -- a hashmap makes that O(1)."`,
  mistake:"Jumping straight to a memorized optimal pattern without explaining why it applies here \u2014 reads as pattern-matching from memory, not problem solving in the moment.",
  why:["Naming the bottleneck explicitly is what separates 'I solved this before' from 'I'm solving this now'","Shows the causal link between the brute force's weakness and the optimization's benefit"],
+ cx:["precedes: <b>The Optimization Ladder</b>"]},
+
+{track:"2 \u00B7 Structure",tier:"build",num:"Step 6.5",name:"The Optimization Ladder",
+ hook:"Check a known progression of techniques out loud, don't jump to one.",
+ approach:"When optimizing past the brute force on an ambiguous, real-world-framed prompt, walk through a standard ladder of techniques out loud, checking each one against the problem's actual shape rather than jumping straight to whichever one you happen to remember: does a hashmap remove a repeated scan? does sorting first expose structure? does a heap help because you only need the top/min/max K? does binary search apply because the answer space is monotonic? is this actually a graph problem in disguise?",
+ code:`# The ladder, checked in order, out loud:
+# HashMap?       -- removes a repeated linear scan? O(1) lookup
+# Sort first?    -- does order expose a pattern? (two pointers...)
+# Heap?          -- only need top/min/max K, not a full sort?
+# Binary search? -- is the answer space itself monotonic?
+# Graph model?   -- are entities actually nodes + relationships?
+
+# "This is a top-K problem, not a full sort -- a heap of size k
+#  gets me O(n log k) instead of O(n log n)."`,
+ mistake:"Jumping to whichever optimized pattern you happen to remember first, rather than checking the problem's actual shape against a few real candidates and explaining why the chosen one fits.",
+ why:["Narrating the ladder shows breadth of technique, not just recall of one memorized trick","Explicitly ruling options out ('sorting doesn't help here because...') is itself a strong signal on an ambiguous prompt"],
+ cx:["precedes: <b>State Complexity, Then Justify It</b>"]},
+
+{track:"2 \u00B7 Structure",tier:"build",num:"Step 6.7",name:"State Complexity, Then Justify It",
+ hook:"Say the Big O, then connect it back to the constraints from Step 2.",
+ approach:"State time and space complexity explicitly and separately, then connect them back to the constraints established during clarification \u2014 an O(n log n) solution is only \u201cacceptable\u201d in reference to an actual input size and latency requirement, not in the abstract.",
+ code:`# Time:  O(n log k)  -- k = 10 products tracked, k << n
+# Space: O(n) for the frequency map, O(k) for the heap
+
+# "Given you said this runs against roughly a million
+#  transactions an hour, O(n log k) with k=10 is effectively
+#  linear -- well within the latency budget we discussed."`,
+ mistake:"Stating a Big O in isolation without ever connecting it back to the constraints gathered earlier \u2014 a technically-true complexity statement that's never tied to 'is this actually good enough here' reads as rote, not engineering judgment.",
+ why:["This is where Step 2's clarifying questions pay off directly, closing the loop with real numbers","Ties the abstract complexity to the concrete, stated constraint rather than leaving it academic"],
  cx:["precedes: <b>Plan Before You Type</b>"]},
 
 {track:"2 \u00B7 Structure",tier:"build",num:"Step 7",name:"Plan Before You Type",
@@ -293,7 +347,19 @@ def _rank(candidates: list[str]) -> list[str]:
     ...`,
  mistake:"Typing code as a stream of consciousness with no plan, then discovering a structural flaw three-quarters of the way through and having to unwind several lines.",
  why:["A cheap-to-fix design flaw caught in comments costs seconds; the same flaw caught mid-code costs minutes","The plan itself is visible reasoning the interviewer can follow and correct before you've written anything wrong"],
- cx:["precedes: <b>Implement Incrementally</b>"]},
+ cx:["precedes: <b>Code Cleanly As You Go</b>"]},
+
+{track:"2 \u00B7 Structure",tier:"build",num:"Step 7.5",name:"Code Cleanly As You Go",
+ hook:"This round also scores the code itself, not just the reasoning.",
+ approach:"Even though this round is primarily about decomposition and reasoning, Amazon explicitly also grades the code you produce: clear variable names, small helper functions where appropriate, minimal nesting, edge cases handled early. This is the same discipline as the dedicated Maintainable Code round, applied here under the same time pressure.",
+ code:`# same write-time substitutions as the Maintainable Code round:
+#   descriptive names instead of x/tmp    (live, not "later")
+#   small named helpers instead of one big block
+#   guard clauses instead of deep nesting
+#   named constants instead of magic numbers`,
+ mistake:"Assuming this round only grades the decomposition process and ideas, and letting the actual code get sloppy since \u201cit's not the coding round\u201d \u2014 it's explicitly graded here too.",
+ why:["The two rounds overlap more than their names suggest","For the full write-time habit set, this pairs directly with the Maintainable Code round deck"],
+ cx:["full depth: <b>the Maintainable Code Round deck</b>"]},
 
 {track:"3 \u00B7 Execute",tier:"skip",num:"Step 8",name:"Implement Incrementally, Narrating",
  hook:"Build in small verified pieces \u2014 don't vanish for ten minutes.",
@@ -312,7 +378,20 @@ for i, x in enumerate(nums):
 return []`,
  mistake:"Going quiet for ten minutes while writing the entire solution in one pass \u2014 if something's wrong, the interviewer only finds out at the very end, with no chance to redirect earlier.",
  why:["Visible incremental progress is direct evidence of structured thinking, not just a nice-to-have","Gives the interviewer a chance to nudge you back on track before a small error compounds"],
- cx:["precedes: <b>Test the Edge Cases</b>"]},
+ cx:["precedes: <b>Walk Through With Real State</b>"]},
+
+{track:"3 \u00B7 Execute",tier:"skip",num:"Step 8.5",name:"Walk Through Your Solution With Real State",
+ hook:"Dry-run the actual code with actual data, out loud, after it's written.",
+ approach:"After implementing, walk through a concrete example against the real code, narrating how the actual data structures change at each step \u2014 not just whether the final output is right. This differs from the earlier hand-trace (Step 3), which happens before any code exists to sanity-check the plan; this walkthrough happens after, against the real implementation, and is what catches subtle bugs before the interviewer has to point them out.",
+ code:`# Input: [5, 1, 4, 2], k = 2
+# i=0: heap = [5]
+# i=1: heap = [5, 1] -> heapify -> [1, 5]
+# i=2: 4 > heap[0]=1 -> replace -> heap = [4, 5]
+# i=3: 2 < heap[0]=4 -> skip
+# Output: [4, 5] -- top 2 largest, matches expectation`,
+ mistake:"Declaring the implementation finished the moment it compiles and passes one quick check, without narrating an actual walkthrough of the real data structure's state changes.",
+ why:["This is where subtle off-by-ones and wrong-branch bugs get caught by YOU, not the interviewer","Narrating actual state (not just 'and then it works') is direct evidence the implementation matches the plan"],
+ cx:["distinct from: <b>Work an Example by Hand</b> \u2014 that's before code exists, this is after"]},
 
 {track:"3 \u00B7 Execute",tier:"skip",num:"Step 9",name:"Test the Edge Cases You Already Flagged",
  hook:"Don't wait to be asked \u2014 run the ambiguous cases yourself.",
@@ -324,6 +403,18 @@ assert two_sum([1, 2, 3], 100) == []          # no solution exists
 print("all cases pass")`,
  mistake:"Declaring the solution \u201cdone\u201d the moment the happy-path example works once, without ever checking the edge cases that were explicitly surfaced during clarification.",
  why:["Closes the loop on Step 2 \u2014 shows the clarifying questions actually shaped the final solution","Self-driven testing is a strong, direct signal of ownership over correctness, not just code that happens to work"],
+ cx:["precedes: <b>The Algorithmic Edge Case Checklist</b>"]},
+
+{track:"3 \u00B7 Execute",tier:"skip",num:"Step 9.5",name:"The Algorithmic Edge Case Checklist",
+ hook:"A second, more technical checklist \u2014 different from the ambiguity ones.",
+ approach:"Beyond the requirement-ambiguity edge cases surfaced in clarification, run a second, more algorithmic checklist against the actual implementation: empty input, a single element, duplicate values, negative numbers, overflow (where the language allows it), extremely large inputs, cycles (for graph problems), and skewed trees (for tree problems). These catch problems in the code itself, not the requirements.",
+ code:`# Algorithmic edge cases (distinct from requirement-ambiguity ones):
+#   empty input              single element
+#   duplicate values          negative numbers
+#   overflow (if applicable)  extremely large input (perf)
+#   cycles (graph problems)   skewed trees (tree problems)`,
+ mistake:"Only testing the edge cases surfaced during clarification (Step 2) and skipping this second, more algorithm-specific list \u2014 a scheduling problem with no negative-number ambiguity can still break on a cycle in the dependency graph.",
+ why:["Requirement ambiguity and algorithmic edge cases are different failure modes and need separate checklists","Graph and tree problems specifically need entries (cycles, skew) a generic list wouldn't surface"],
  cx:["closes the loop with: <b>Ask Clarifying Questions</b>"]},
 
 {track:"3 \u00B7 Execute",tier:"skip",num:"Step 10",name:"When Stuck, Narrate the Debugging",
@@ -343,6 +434,64 @@ for i, x in enumerate(nums):
  mistake:"Freezing in silence when something doesn't work, or randomly changing code hoping something fixes it, instead of narrating a systematic bisection of the problem.",
  why:["A methodical debugging narration is itself evidence of structured problem solving \u2014 arguably the clearest evidence in the whole round","Interviewers often rate how you handle being stuck more heavily than whether you get stuck at all"],
  cx:["draws on: <b>Work an Example by Hand</b> \u2014 same tracing skill, applied to your own bug"]},
+
+{track:"Reference",tier:"build",num:"Pattern Recognition",name:"Question Type \u2192 Technique Family",
+ hook:"Amazon reframes familiar algorithms as real-world scenarios \u2014 learn to translate.",
+ approach:"Problem Solving round prompts are rarely phrased as their underlying LeetCode pattern. Recognizing which real-world framing maps to which technique family is itself part of the skill being tested \u2014 naming the category out loud (\u201cthis smells like a scheduling problem\u201d) is a strong opening move.",
+ code:`Scheduling       task scheduler, meeting rooms, CPU scheduling,
+                 job prioritization
+                 -> heap, sorting, greedy
+
+Graph            package dependencies, flight routes, network
+                 connectivity, course prerequisites
+                 -> DFS, BFS, topological sort, union-find
+
+Search           nearest warehouse, closest store, recommendations
+                 -> binary search, BFS, heap, (rarely: KD-tree)
+
+Optimization     minimize delivery cost, maximize profit, reduce
+                 latency
+                 -> greedy, DP, binary search on the answer
+
+Data Processing  log processing, duplicate detection, streaming
+                 analytics
+                 -> hash maps, sliding window, heap, queue
+
+Tree             org charts, file systems, decision trees
+                 -> DFS, BFS, lowest common ancestor, traversals`,
+ mistake:"Trying to identify the exact LeetCode problem being disguised, instead of identifying the technique FAMILY the scenario maps to \u2014 real prompts rarely match a memorized problem 1:1.",
+ why:["This translation step is itself part of what's being evaluated, not just knowledge of the techniques underneath","Naming the category early gives the interviewer a signpost for where your solution is headed"],
+ cx:["source: <b>common Amazon question-type patterns</b>"]},
+
+{track:"Reference",tier:"build",num:"Worked Example 2",name:"Top 10 Products Every Hour",
+ hook:"The same framework, run on a real Amazon-style prompt.",
+ approach:"Instead of \u201cfind Top K Frequent Elements,\u201d the prompt becomes: \u201cAmazon wants to display the Top 10 most purchased products every hour \u2014 design an algorithm.\u201d Clarify first (is the data streaming? how many distinct products? do counts reset hourly? is approximate accuracy acceptable?). State the brute force (count everything, sort all products, O(n log n)). Optimize (a hashmap for frequency counts paired with a min-heap capped at size 10, landing at O(n log k) with k=10). Then \u2014 the part that distinguishes a senior answer \u2014 discuss scalability beyond a single machine: sharding counts across workers, and a MapReduce-style or distributed aggregation step if volume is large enough that no single machine can hold it.",
+ code:`1. Clarify  -> streaming? how many products? hourly reset?
+               approximate accuracy acceptable?
+2. Brute    -> count everything, sort all -> O(n log n)
+3. Optimize -> hashmap counts + min-heap of size 10
+               -> O(n log k), k = 10
+4. Scale    -> shard counts across workers
+               -> MapReduce / distributed aggregation if huge`,
+ mistake:"Stopping at the single-machine optimized algorithm \u2014 the scalability discussion is explicitly what separates 'algorithmic thinking' from 'practical engineering,' and Amazon evaluates for both.",
+ why:["This is the shape of an Amazon-style prompt: familiar technique, unfamiliar framing, plus a scale follow-up","The scalability layer is often worth more signal than the O(n log k) answer underneath it"],
+ cx:["ties together: <b>The Optimization Ladder</b> + <b>State Complexity</b>"]},
+
+{track:"Reference",tier:"build",num:"Practice List",name:"Prompts Worth Rehearsing the Full Process On",
+ hook:"Nine real prompts \u2014 practice the framework, not just the answer.",
+ approach:"These problems specifically require clarifying ambiguous requirements, modeling the problem appropriately, choosing suitable data structures, analyzing tradeoffs, and writing clean, testable code \u2014 the exact combination this round evaluates. Run the full ten-step process on each rather than just solving them.",
+ code:`Design a rate limiter.
+Build an autocomplete system.
+Detect duplicate events in a distributed log.
+Merge streaming data from multiple sorted sources.
+Schedule jobs with dependencies and priorities.
+Design an LRU cache from scratch.
+Find the top K items from a continuously updating stream.
+Determine whether task dependencies contain a cycle.
+Design a notification system that avoids duplicate alerts.`,
+ mistake:"Practicing these as isolated algorithm problems rather than running the full clarify \u2192 contract \u2192 brute force \u2192 optimize \u2192 complexity \u2192 edge cases \u2192 clean code \u2192 walkthrough sequence on each one.",
+ why:["Several of these overlap directly with your System Design deck \u2014 the LRU cache and rate limiter appear there too, at a different altitude","The framework is what's being rehearsed here, not memorized answers to these nine specific prompts"],
+ cx:["overlaps with: <b>your System Design deck</b>"]},
 
 {track:"Reference",tier:"build",num:"Worked Through",name:"All 10 Steps, End to End",
  hook:"How the framework strings together on one problem, at a glance.",
