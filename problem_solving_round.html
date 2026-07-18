@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Problem Solving Round — Python 3 Flash Cards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4f0e7; --paper-2:#efe9dc;
+    --ink:#161514; --rule:#111;
+    --teal:#1f97ae; --teal-soft:#5bc0d0;
+    --coral:#e0514c; --amber:#c98a2b; --muted:#726c60; --line:#d8d0be;
+    --code-bg:#191f26; --code-fg:#e7e3d8;
+    --code-com:#8aa889; --code-str:#e2b871; --code-kw:#5cc4da; --code-fn:#f0938c; --code-num:#c69cf0;
+    --disp:"Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper);background-image:linear-gradient(var(--line) 1px, transparent 1px);background-size:100% 34px;color:var(--ink);font-family:var(--mono);min-height:100vh;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:840px;margin:0 auto;padding:26px 18px 60px;}
+
+  .kicker{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);font-weight:700;}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(24px,5.6vw,40px);line-height:.98;letter-spacing:-.01em;margin:4px 0 8px;}
+  .sub{font-size:13px;color:var(--muted);line-height:1.55;max-width:68ch;}
+  .rule{height:6px;background:var(--rule);border-radius:2px;margin:12px 0 14px;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11.5px;color:var(--muted);margin:0 0 16px;align-items:center;}
+  .legend b{color:var(--ink);}
+  .dot{display:inline-flex;align-items:center;gap:6px;}
+  .pip{width:11px;height:11px;border-radius:50%;display:inline-block;border:2px solid;}
+  .pip.skip{background:var(--coral);border-color:var(--coral);}
+  .pip.build{background:transparent;border-color:var(--teal);}
+
+  .filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+  .chip{font-size:11.5px;font-weight:600;letter-spacing:.02em;padding:6px 11px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);border-radius:20px;cursor:pointer;transition:.12s;}
+  .chip:hover{background:var(--paper-2);}
+  .chip.active{background:var(--ink);color:var(--paper);}
+
+  .stage{perspective:1600px;margin-bottom:16px;}
+  .card{position:relative;width:100%;min-height:560px;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);cursor:pointer;}
+  .card.flipped{transform:rotateY(180deg);}
+  .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#fbf8f1;border:2.5px solid var(--ink);border-radius:14px;box-shadow:7px 8px 0 rgba(17,17,17,.9);padding:24px 24px 20px;display:flex;flex-direction:column;overflow:hidden;}
+  .toprow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .eyebrow{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;color:var(--teal);}
+  .tier{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+  .tier.skip{background:var(--coral);color:#fff;}
+  .tier.build{background:transparent;color:var(--teal);border:1.5px solid var(--teal);}
+
+  .front{align-items:stretch;text-align:center;}
+  .front .center{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+  .stepnum{font-family:var(--disp);font-weight:700;font-size:13px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+  .term{font-family:var(--disp);font-weight:700;letter-spacing:-.01em;line-height:1.04;font-size:clamp(23px,5.2vw,38px);margin-top:6px;}
+  .hook{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.5;max-width:42ch;font-style:italic;}
+  .underbar{height:5px;width:min(360px,72%);background:var(--rule);border-radius:2px;margin:18px auto 0;}
+  .flip-hint{margin-top:16px;font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px;}
+  .flip-hint b{color:var(--coral);font-weight:700;}
+  .arrow{color:var(--coral);font-family:var(--disp);font-weight:700;}
+
+  .back{transform:rotateY(180deg);}
+  .backscroll{overflow-y:auto;flex:1;display:flex;flex-direction:column;padding-right:3px;}
+  .backscroll::-webkit-scrollbar{width:7px;}
+  .backscroll::-webkit-scrollbar-thumb{background:#cfc7b4;border-radius:4px;}
+  .bterm{font-family:var(--disp);font-weight:700;font-size:clamp(16px,3.4vw,21px);margin:3px 0 2px;line-height:1.08;}
+  .bmeta{font-size:10.5px;color:var(--muted);margin-bottom:8px;}
+  .thinrule{height:3px;background:var(--rule);border-radius:2px;margin:0 0 10px;}
+
+  .sectionlabel{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--teal);font-weight:700;margin:0 0 5px;}
+  .approach{font-size:12.5px;line-height:1.5;color:#242019;margin:0 0 10px;}
+  .approach strong{color:var(--teal);font-weight:700;}
+  .approach code{background:var(--paper-2);border-radius:4px;padding:0 4px;font-size:11px;}
+
+  pre{margin:0 0 11px;background:var(--code-bg);color:var(--code-fg);border-radius:9px;padding:11px 12px;font-family:var(--mono);font-size:11px;line-height:1.5;overflow-x:visible;white-space:pre;border:1px solid #2b333d;}
+  pre::-webkit-scrollbar{height:8px;}
+  pre::-webkit-scrollbar-thumb{background:#39424d;border-radius:4px;}
+  .c-com{color:var(--code-com);font-style:italic;}.c-str{color:var(--code-str);}.c-kw{color:var(--code-kw);}.c-fn{color:var(--code-fn);}.c-num{color:var(--code-num);}
+
+  .mistakebox{border-left:4px solid var(--coral);background:#fbeeec;border-radius:0 8px 8px 0;padding:9px 12px;margin:0 0 11px;}
+  .mistakebox .mlabel{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--coral);font-weight:700;display:block;margin-bottom:3px;}
+  .mistakebox .mtext{font-size:12px;line-height:1.45;color:#3a2320;}
+
+  .whybox{margin:0 0 4px;}
+  .whylabel{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--amber);font-weight:700;margin-bottom:6px;}
+  .whylist{display:flex;flex-direction:column;gap:5px;}
+  .whyitem{font-size:11.5px;line-height:1.4;color:#4a3714;background:#fbf3e6;border-left:3px solid var(--amber);border-radius:0 6px 6px 0;padding:6px 9px;}
+
+  .cx{margin-top:auto;padding-top:9px;font-size:10.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px;letter-spacing:.02em;border-top:1px dashed var(--line);}
+
+  .controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;}
+  .navbtn{font-family:var(--disp);font-weight:700;font-size:14px;padding:11px 16px;border:2.5px solid var(--ink);background:#fbf8f1;color:var(--ink);border-radius:11px;cursor:pointer;transition:.1s;box-shadow:3px 4px 0 rgba(17,17,17,.85);}
+  .navbtn:hover{transform:translate(-1px,-1px);box-shadow:4px 5px 0 rgba(17,17,17,.85);}
+  .navbtn:active{transform:translate(2px,3px);box-shadow:1px 1px 0 rgba(17,17,17,.85);}
+  .flipbtn{background:var(--coral);color:#fff;}
+  .counter{font-family:var(--disp);font-weight:700;font-size:15px;text-align:center;min-width:70px;}
+  .counter small{display:block;font-family:var(--mono);font-weight:500;font-size:9.5px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;line-height:1.3;}
+  .util{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+  .util .navbtn{font-size:12px;padding:8px 13px;box-shadow:2px 3px 0 rgba(17,17,17,.85);}
+  .foot{margin-top:26px;font-size:11px;color:var(--muted);text-align:center;line-height:1.7;}
+  .kbd{font-family:var(--mono);border:1px solid var(--muted);border-radius:5px;padding:1px 6px;font-size:10.5px;}
+  @media (max-width:520px){.face{padding:18px 16px;}.navbtn{padding:10px 12px;}body{background-size:100% 30px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Amazon coding loop &#x00B7; "Problem Solving" round &#x00B7; process over final answer</div>
+    <h1>Problem Solving Round</h1>
+    <p class="sub">This round scores how you break an ambiguous prompt into manageable pieces — not just whether the final code is correct. A messy-but-narrated solve often out-scores a silent-but-correct one. 10 steps, each paired with the Python 3 pattern that makes that step visible to an interviewer instead of just happening in your head.</p>
+    <div class="rule"></div>
+    <div class="legend">
+      <span class="dot"><span class="pip skip"></span><b>Communication</b> — skipped first under pressure, scored heavily</span>
+      <span class="dot"><span class="pip build"></span><b>Structuring</b> — the actual decomposition mechanics</span>
+    </div>
+  </header>
+
+  <div class="filters" id="filters"></div>
+
+  <div class="stage">
+    <div class="card" id="card" onclick="flip()">
+      <div class="face front">
+        <div class="toprow"><span class="eyebrow" id="f-track"></span><span class="tier" id="f-tier"></span></div>
+        <div class="center">
+          <div class="stepnum" id="f-num"></div>
+          <div class="term" id="f-name"></div>
+          <div class="hook" id="f-hook"></div>
+          <div class="underbar"></div>
+          <div class="flip-hint"><span class="arrow">&#x21BB;</span> flip for the move, Python pattern &amp; mistake</div>
+        </div>
+      </div>
+      <div class="face back">
+        <div class="backscroll">
+          <div class="toprow"><span class="eyebrow" id="b-track"></span><span class="tier" id="b-tier"></span></div>
+          <div class="bterm" id="b-name"></div>
+          <div class="bmeta" id="b-meta"></div>
+          <div class="thinrule"></div>
+          <div class="sectionlabel">&#x25B8; The Move</div>
+          <div class="approach" id="b-approach"></div>
+          <pre id="b-code"></pre>
+          <div class="mistakebox"><span class="mlabel">&#x25B8; The Mistake This Prevents</span><span class="mtext" id="b-mistake"></span></div>
+          <div class="whybox"><div class="whylabel">&#x25B8; Why It's Scored</div><div class="whylist" id="b-why"></div></div>
+          <div class="cx" id="b-cx"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="navbtn" onclick="prev(event)">&#x2039; Prev</button>
+    <div class="counter"><span id="pos">1</span> / <span id="total">1</span><small id="deckname">All</small></div>
+    <button class="navbtn" onclick="next(event)">Next &#x203A;</button>
+  </div>
+  <div class="util">
+    <button class="navbtn flipbtn" onclick="flip(event)">Flip &#x27F3;</button>
+    <button class="navbtn" onclick="shuffle(event)">Shuffle &#x2928;</button>
+    <button class="navbtn" onclick="skipOnly(event)">Communication only &#x2605;</button>
+    <button class="navbtn" onclick="reset(event)">Reset &#x21BA;</button>
+  </div>
+
+  <p class="foot">
+    <span class="kbd">&#x2190;</span>/<span class="kbd">&#x2192;</span> navigate &#x00B7; <span class="kbd">Space</span> flip &#x00B7; <span class="kbd">S</span> shuffle &#x00B7; <span class="kbd">C</span> communication-only<br>
+    12 cards &#x00B7; practice narrating this out loud, not just doing it silently in your head
+  </p>
+</div>
+
+<script>
+const CARDS = [
+{track:"Orientation",tier:"build",num:"Read This First",name:"What 'Problem Solving' Actually Scores",
+ hook:"This round grades your process, not just your final answer.",
+ approach:"Amazon's Problem Solving round specifically evaluates whether you can take an ambiguous, underspecified prompt and turn it into a structured, manageable approach \u2014 that's a different skill than \u201ccan you code a known pattern.\u201d A correct solution reached in total silence gives the interviewer almost nothing to score; a partially-working solution reached through visible, logical decomposition gives them a lot to score favorably.",
+ code:`# The interviewer is filling out a scorecard while you work.
+# Two candidates, same final bug:
+#
+# Candidate A: silent for 12 minutes, then working-ish code,
+#   bug found by the interviewer at the end.
+# Candidate B: narrates assumptions, decomposes into named
+#   pieces, catches the same bug themselves while testing.
+#
+# B scores higher on "Problem Solving" even with a rockier
+# path, because the SCORECARD is about how you got there.`,
+ mistake:"Treating this round like the algorithms round \u2014 optimizing silently for the fastest correct answer instead of the most legible reasoning process.",
+ why:["Sets up every step below \u2014 each one exists to make part of your reasoning visible","This is the lens to reread the rest of the deck through"],
+ cx:["applies across: <b>every step below</b>"]},
+
+{track:"1 \u00B7 Understand",tier:"skip",num:"Step 1",name:"Restate the Problem",
+ hook:"Paraphrase it back before you do anything else.",
+ approach:"Restate the prompt in your own words before writing a line of code. This confirms you actually understood it, surfaces a misunderstanding while it's still cheap to fix, and buys you thinking time without going silent.",
+ code:`def two_sum(nums: list[int], target: int) -> list[int]:
+    """
+    Restated: given a list of numbers and a target, find two
+    entries that add up to target and return their indices.
+    I'm going to assume for now there's exactly one valid pair
+    -- I'll confirm that assumption in the next step.
+    """
+    pass  # plan comes before implementation`,
+ mistake:"Starting to code from a half-understood prompt, then discovering the misunderstanding halfway through the solve \u2014 at which point the whole approach may need to be scrapped.",
+ why:["Confirms understanding before any work is sunk into a wrong interpretation","A docstring-first habit shows structure even before real logic exists"],
+ cx:["precedes: <b>Ask Clarifying Questions</b>"]},
+
+{track:"1 \u00B7 Understand",tier:"skip",num:"Step 2",name:"Ask Clarifying Questions",
+ hook:"Name what's NOT specified, then ask about it \u2014 don't assume silently.",
+ approach:"Identify what the prompt leaves ambiguous \u2014 duplicates, sort order, empty input, negative numbers, multiple valid answers, input size \u2014 and ask two or three targeted questions rather than guessing. Then write the confirmed assumptions down where the interviewer can see them.",
+ code:`# Assumptions confirmed with interviewer before coding:
+#   - nums may contain duplicate values
+#   - exactly one valid pair is guaranteed to exist
+#   - nums is NOT pre-sorted
+#   - array can be empty -> should return [] in that case
+#
+# These become my edge cases to test later -- don't lose them.`,
+ mistake:"Silently assuming something convenient (e.g. the array is sorted) and building an approach that's simply wrong once the real constraints come out in testing.",
+ why:["Unstated assumptions are the single most common source of a wrong solution in this round","Writing them down turns them into a testing checklist for later, not just a one-time question"],
+ cx:["precedes: <b>Work an Example by Hand</b>"]},
+
+{track:"1 \u00B7 Understand",tier:"skip",num:"Step 3",name:"Work an Example by Hand",
+ hook:"Trace it manually before trusting yourself to code it.",
+ approach:"Before writing real logic, manually trace through a small example \u2014 ideally one you construct yourself, not just the one given \u2014 to see the mechanics play out step by step. This is where off-by-one errors and ordering assumptions get caught for free, before they're buried inside code.",
+ code:`# nums = [2, 7, 11, 15], target = 9
+# i=0, x=2, need=7, seen={}        -> not found, seen becomes {2: 0}
+# i=1, x=7, need=2, seen={2: 0}    -> 2 IS in seen -> return [0, 1]
+#
+# Tracing this by hand confirms: check BEFORE adding to seen,
+# or you'd incorrectly match a number against itself.`,
+ mistake:"Jumping straight from a plan to code with no manual trace, missing a subtle ordering bug (like checking a number against itself) that a 30-second hand trace would have caught immediately.",
+ why:["Manual tracing catches ordering/off-by-one bugs before they're hidden inside real code","A self-constructed example (not just the given one) tests your own understanding more honestly"],
+ cx:["precedes: <b>Decompose Into Subproblems</b>"]},
+
+{track:"2 \u00B7 Structure",tier:"build",num:"Step 4",name:"Decompose Into Subproblems",
+ hook:"Name the pieces before you write any of them.",
+ approach:"Break the ambiguous \u201csolve this\u201d into small, named, independently testable pieces, each with a single clear responsibility. This is the core skill this round is testing \u2014 not writing correct code, but structuring a complex problem into manageable components.",
+ code:`def solve(document: str, query: str) -> list[str]:
+    cleaned = _normalize(document)
+    candidates = _find_candidates(cleaned, query)
+    return _rank(candidates)
+
+def _normalize(text: str) -> str:
+    ...   # one job: cleanup/standardize input
+
+def _find_candidates(text: str, query: str) -> list[str]:
+    ...   # one job: generate possible matches
+
+def _rank(candidates: list[str]) -> list[str]:
+    ...   # one job: order the results`,
+ mistake:"Writing one monolithic function that tries to do everything at once \u2014 when a bug appears, it's impossible to isolate which part is actually wrong under interview time pressure.",
+ why:["Named subproblems are directly what the round title is testing","Each piece can be tested and reasoned about independently when something goes wrong"],
+ cx:["mirrors: <b>Functions Do One Thing</b> from clean-code practice"]},
+
+{track:"2 \u00B7 Structure",tier:"build",num:"Step 5",name:"State the Brute Force First",
+ hook:"Say the naive answer out loud before hunting for the clever one.",
+ approach:"Articulate a correct-but-naive approach before optimizing, out loud. It proves you can solve the problem at all, gives the interviewer something concrete to follow, and gives you a working baseline to validate an optimized version against later.",
+ code:`def brute_force(nums: list[int], target: int) -> list[int]:
+    for i in range(len(nums)):
+        for j in range(i + 1, len(nums)):
+            if nums[i] + nums[j] == target:
+                return [i, j]
+    return []
+
+# "This is O(n^2) -- correct, but the inner loop is doing
+#  repeated work. Let's see if we can avoid re-scanning."`,
+ mistake:"Staying silent while hunting for the optimal solution \u2014 if time runs out before you reach it, the interviewer has nothing to score except silence.",
+ why:["A stated brute force is partial credit that exists the moment you say it, not just when code compiles","Gives you a reference implementation to sanity-check the optimized version against"],
+ cx:["precedes: <b>Identify the Bottleneck</b>"]},
+
+{track:"2 \u00B7 Structure",tier:"build",num:"Step 6",name:"Identify the Bottleneck, Then Optimize",
+ hook:"Name exactly what's slow before reaching for a fix.",
+ approach:"Point at specifically what makes the brute force slow \u2014 the nested loop, the repeated scan, the redundant recomputation \u2014 and connect that directly to the pattern that removes it. This is the same recognition-trigger muscle from pattern drilling, made explicit in words.",
+ code:`def optimized(nums: list[int], target: int) -> list[int]:
+    seen = {}                     # trades O(n) space for O(1) lookup
+    for i, x in enumerate(nums):  # removes the O(n) inner loop
+        complement = target - x
+        if complement in seen:
+            return [seen[complement], i]
+        seen[x] = i
+    return []
+
+# "The bottleneck was re-scanning the array for a complement
+#  on every outer iteration -- a hashmap makes that O(1)."`,
+ mistake:"Jumping straight to a memorized optimal pattern without explaining why it applies here \u2014 reads as pattern-matching from memory, not problem solving in the moment.",
+ why:["Naming the bottleneck explicitly is what separates 'I solved this before' from 'I'm solving this now'","Shows the causal link between the brute force's weakness and the optimization's benefit"],
+ cx:["precedes: <b>Plan Before You Type</b>"]},
+
+{track:"2 \u00B7 Structure",tier:"build",num:"Step 7",name:"Plan Before You Type",
+ hook:"Sketch the structure in comments before writing real code.",
+ approach:"Once the approach is chosen, sketch the structure as comments (or say it verbally) before filling in real logic. This catches design flaws \u2014 like needing a value you're about to overwrite \u2014 while they're still cheap to fix, rather than mid-implementation.",
+ code:`def solve(nums, target):
+    # plan:
+    # 1. build a "seen so far" map as we scan left to right
+    # 2. for each number, check whether its complement is
+    #    already in the map (i.e. appeared earlier)
+    # 3. return both indices immediately on a match
+    # 4. if the loop finishes with no match, return []
+    ...`,
+ mistake:"Typing code as a stream of consciousness with no plan, then discovering a structural flaw three-quarters of the way through and having to unwind several lines.",
+ why:["A cheap-to-fix design flaw caught in comments costs seconds; the same flaw caught mid-code costs minutes","The plan itself is visible reasoning the interviewer can follow and correct before you've written anything wrong"],
+ cx:["precedes: <b>Implement Incrementally</b>"]},
+
+{track:"3 \u00B7 Execute",tier:"skip",num:"Step 8",name:"Implement Incrementally, Narrating",
+ hook:"Build in small verified pieces \u2014 don't vanish for ten minutes.",
+ approach:"Build and check the solution in small pieces rather than writing the whole function silently and running it once at the end. Narrate what each piece does and why as you write it, so the interviewer can follow \u2014 and catch a wrong turn \u2014 in real time instead of only at the finish line.",
+ code:`# First: just the skeleton, no real logic yet.
+seen = {}
+for i, x in enumerate(nums):
+    pass
+# "Loop structure looks right -- now adding the lookup..."
+
+# Then: fill in the actual check.
+for i, x in enumerate(nums):
+    if target - x in seen:
+        return [seen[target - x], i]
+    seen[x] = i
+return []`,
+ mistake:"Going quiet for ten minutes while writing the entire solution in one pass \u2014 if something's wrong, the interviewer only finds out at the very end, with no chance to redirect earlier.",
+ why:["Visible incremental progress is direct evidence of structured thinking, not just a nice-to-have","Gives the interviewer a chance to nudge you back on track before a small error compounds"],
+ cx:["precedes: <b>Test the Edge Cases</b>"]},
+
+{track:"3 \u00B7 Execute",tier:"skip",num:"Step 9",name:"Test the Edge Cases You Already Flagged",
+ hook:"Don't wait to be asked \u2014 run the ambiguous cases yourself.",
+ approach:"Actively run through the ambiguous cases identified back in Step 2 \u2014 don't wait for the interviewer to ask \u201cwhat about an empty array?\u201d Bringing your own test calls shows the clarifying questions earlier weren't just for show.",
+ code:`assert two_sum([2, 7, 11, 15], 9) == [0, 1]   # normal case
+assert two_sum([3, 3], 6) == [0, 1]           # duplicate values
+assert two_sum([], 5) == []                   # empty input
+assert two_sum([1, 2, 3], 100) == []          # no solution exists
+print("all cases pass")`,
+ mistake:"Declaring the solution \u201cdone\u201d the moment the happy-path example works once, without ever checking the edge cases that were explicitly surfaced during clarification.",
+ why:["Closes the loop on Step 2 \u2014 shows the clarifying questions actually shaped the final solution","Self-driven testing is a strong, direct signal of ownership over correctness, not just code that happens to work"],
+ cx:["closes the loop with: <b>Ask Clarifying Questions</b>"]},
+
+{track:"3 \u00B7 Execute",tier:"skip",num:"Step 10",name:"When Stuck, Narrate the Debugging",
+ hook:"Being stuck isn't the failure \u2014 going silent while stuck is.",
+ approach:"If a test fails or you get stuck, say what you expected versus what you're actually seeing, and bisect the problem systematically \u2014 check the smallest failing case, add a trace print, verify one assumption at a time \u2014 rather than freezing or guessing randomly.",
+ code:`# Expected [0, 1], got [] -- let's trace it out loud:
+for i, x in enumerate(nums):
+    complement = target - x
+    print(f"i={i} x={x} need={complement} seen={seen}")
+    if complement in seen:
+        return [seen[complement], i]
+    seen[x] = i
+
+# "Seen is empty on i=0 as expected. On i=1, need=3, and I'd
+#  expect 3 to be in seen from i=0 -- let me check the order
+#  I'm adding to seen relative to the check."`,
+ mistake:"Freezing in silence when something doesn't work, or randomly changing code hoping something fixes it, instead of narrating a systematic bisection of the problem.",
+ why:["A methodical debugging narration is itself evidence of structured problem solving \u2014 arguably the clearest evidence in the whole round","Interviewers often rate how you handle being stuck more heavily than whether you get stuck at all"],
+ cx:["draws on: <b>Work an Example by Hand</b> \u2014 same tracing skill, applied to your own bug"]},
+
+{track:"Reference",tier:"build",num:"Worked Through",name:"All 10 Steps, End to End",
+ hook:"How the framework strings together on one problem, at a glance.",
+ approach:"Applied to Two Sum end to end: restate the goal in your own words; clarify duplicates/sort order/empty input and write the assumptions down; hand-trace a small example to see the mechanics; decompose into a scan-and-lookup structure; state the O(n\u00b2) brute force first; name the repeated-scan bottleneck and introduce a hashmap; plan the loop in comments; implement it in two visible passes (skeleton, then logic); test the exact edge cases flagged in clarification; and if something breaks, trace it out loud with print statements rather than going quiet.",
+ code:`1. Restate    -> "find two indices whose values sum to target"
+2. Clarify    -> duplicates? sorted? empty input? one answer?
+3. Hand-trace -> walk [2,7,11,15], target=9 manually
+4. Decompose  -> scan + lookup, not one tangled block
+5. Brute force-> nested loop, O(n^2), say it out loud
+6. Bottleneck -> repeated scanning -> hashmap removes it
+7. Plan       -> comment the loop's 4 steps before coding
+8. Implement  -> skeleton first, then fill in the real check
+9. Test       -> assert against every case from step 2
+10. If stuck  -> print-trace, narrate, bisect -- don't freeze`,
+ mistake:"Notice how little of this is about knowing the hashmap trick \u2014 that's one line out of ten steps. The trick is necessary but not sufficient for a strong score.",
+ why:["This is the shape a strong answer takes on almost any ambiguous prompt, not just this one","Practice narrating this out loud on problems you already know cold \u2014 the framework is the muscle being built, not the specific answer"],
+ cx:["ties together: <b>all 10 steps</b>"]},
+];
+
+/* ---- syntax highlighter ---- */
+const KW = new Set(["def","class","return","if","elif","else","while","for","in","not","and","or","is","None","True","False","import","from","self","del","pass","break","continue","lambda","yield","with","as","try","except","finally","raise","global","nonlocal","assert"]);
+const FN = new Set(["print","len","range","set","dict","list","tuple","sum","max","min","append","pop","get","enumerate","sorted","f"]);
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function highlight(code){
+  return code.replace(/(#.*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|([A-Za-z_]\w*)|(\d+)|([\s\S])/g,
+    (m,com,str,word,num,other)=>{
+      if(com!==undefined)  return '<span class="c-com">'+esc(com)+'</span>';
+      if(str!==undefined)  return '<span class="c-str">'+esc(str)+'</span>';
+      if(word!==undefined){
+        if(KW.has(word)) return '<span class="c-kw">'+word+'</span>';
+        if(FN.has(word)) return '<span class="c-fn">'+word+'</span>';
+        return esc(word);
+      }
+      if(num!==undefined)  return '<span class="c-num">'+num+'</span>';
+      return esc(other);
+    });
+}
+
+/* ---- app ---- */
+const TRACKS = ["All", ...Array.from(new Set(CARDS.map(c=>c.track)))];
+let filter="All", deck=CARDS.slice(), idx=0;
+const $=id=>document.getElementById(id);
+const TIER_LABEL={skip:"Communication",build:"Structuring"};
+
+function buildFilters(){
+  const box=$("filters"); box.innerHTML="";
+  TRACKS.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="chip"+(t===filter?" active":"");
+    b.textContent=t;
+    b.onclick=()=>{filter=t;applyFilter();};
+    box.appendChild(b);
+  });
+}
+function applyFilter(){
+  deck = filter==="All" ? CARDS.slice() : CARDS.filter(c=>c.track===filter);
+  idx=0; buildFilters(); render();
+}
+function render(){
+  const c=deck[idx];
+  $("card").classList.remove("flipped");
+  $("f-track").textContent=c.track;
+  $("b-track").textContent=c.track;
+  ["f","b"].forEach(p=>{
+    const el=$(p+"-tier");
+    el.textContent=TIER_LABEL[c.tier];
+    el.className="tier "+c.tier;
+  });
+  $("f-num").textContent=c.num;
+  $("f-name").textContent=c.name;
+  $("f-hook").textContent=c.hook;
+  $("b-name").textContent=c.num+" \u00B7 "+c.name;
+  $("b-meta").textContent=c.track;
+  $("b-approach").innerHTML=c.approach;
+  $("b-code").innerHTML=highlight(c.code);
+  $("b-mistake").textContent=c.mistake;
+  $("b-why").innerHTML=c.why.map(w=>`<div class="whyitem">${w}</div>`).join("");
+  $("b-cx").innerHTML=(c.cx||[]).map(x=>"<span>"+x+"</span>").join("");
+  $("pos").textContent=idx+1;
+  $("total").textContent=deck.length;
+  $("deckname").textContent=filter;
+  const bs=document.querySelector(".backscroll"); if(bs) bs.scrollTop=0;
+}
+function flip(e){if(e)e.stopPropagation();$("card").classList.toggle("flipped");}
+function next(e){if(e)e.stopPropagation();idx=(idx+1)%deck.length;render();}
+function prev(e){if(e)e.stopPropagation();idx=(idx-1+deck.length)%deck.length;render();}
+function shuffle(e){if(e)e.stopPropagation();for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}idx=0;render();}
+function skipOnly(e){if(e)e.stopPropagation();filter="All";deck=CARDS.filter(c=>c.tier==="skip");idx=0;buildFilters();$("deckname").textContent="Communication";render();}
+function reset(e){if(e)e.stopPropagation();filter="All";applyFilter();}
+document.addEventListener("keydown",ev=>{
+  if(ev.key==="ArrowRight")next();
+  else if(ev.key==="ArrowLeft")prev();
+  else if(ev.key===" "){ev.preventDefault();flip();}
+  else if(ev.key.toLowerCase()==="s")shuffle();
+  else if(ev.key.toLowerCase()==="c")skipOnly();
+});
+buildFilters();render();
+</script>
+</body>
+</html>
